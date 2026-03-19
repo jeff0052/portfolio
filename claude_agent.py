@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from anthropic import Anthropic
@@ -98,11 +99,15 @@ class ClaudeAgent:
 
     async def process_message(self, user_message: str) -> str:
         """Process a user message and return the final response."""
+        return await asyncio.to_thread(self._process_message_sync, user_message)
+
+    def _process_message_sync(self, user_message: str) -> str:
+        """Synchronous message processing (runs in thread pool)."""
         self._conversation.add_user_message(user_message)
 
         # Check if compression is needed
         if self._conversation.needs_compression():
-            await self._compress_conversation()
+            self._compress_conversation_sync()
 
         # Build system prompt
         system = SYSTEM_PROMPT
@@ -196,7 +201,7 @@ class ClaudeAgent:
             logger.error("Tool execution error: %s", e)
             return f"Error: {e}"
 
-    async def _compress_conversation(self) -> None:
+    def _compress_conversation_sync(self) -> None:
         """Compress the conversation history using Claude."""
         messages_to_compress = self._conversation.get_messages_for_compression()
         if not messages_to_compress:

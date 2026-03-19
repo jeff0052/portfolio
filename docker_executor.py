@@ -51,7 +51,7 @@ class DockerExecutor:
             volumes={
                 self._workspace_dir: {
                     "bind": "/workspace",
-                    "mode": "rw,nosuid,nodev",
+                    "mode": "rw",
                 }
             },
             tmpfs={"/tmp": "size=100M"},
@@ -70,25 +70,24 @@ class DockerExecutor:
         self._ensure_container()
         try:
             exec_result = self._container.exec_run(
-                ["bash", "-c", command],
+                ["bash", "-c", f"timeout {self._timeout} bash -c {repr(command)}"],
                 workdir="/workspace",
                 user="1000:1000",
                 demux=True,
-                timeout=self._timeout,
             )
             stdout = exec_result.output[0] or b""
             stderr = exec_result.output[1] or b""
             output = (stdout + stderr).decode("utf-8", errors="replace")
+            if exec_result.exit_code == 124:
+                return {
+                    "exit_code": -1,
+                    "output": f"Timeout: command exceeded {self._timeout}s limit",
+                }
             return {
                 "exit_code": exec_result.exit_code,
                 "output": output,
             }
         except Exception as e:
-            if "timeout" in str(e).lower() or "read timed out" in str(e).lower():
-                return {
-                    "exit_code": -1,
-                    "output": f"Timeout: command exceeded {self._timeout}s limit",
-                }
             return {
                 "exit_code": -1,
                 "output": f"Error: {str(e)}",
