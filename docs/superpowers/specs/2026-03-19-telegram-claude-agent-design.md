@@ -74,7 +74,7 @@ Single-process Python application with four core modules:
   - `mem_limit="512m"` — max 512MB memory
   - `cpu_period` / `cpu_quota` — CPU throttling
   - 30-second per-command execution timeout
-  - `--read-only` root filesystem, only `/workspace` is writable
+  - `--read-only` root filesystem, only `/workspace` and `/tmp` (tmpfs, 100MB) are writable
   - `--user 1000:1000` — non-root execution
   - `--cap-drop=ALL` — drop all Linux capabilities
   - `--security-opt=no-new-privileges`
@@ -91,8 +91,8 @@ Single-process Python application with four core modules:
 ### Sandbox Isolation
 - Docker containers have no network access
 - Resource limits on memory and CPU
-- 30-second hard timeout
-- Containers auto-removed after execution
+- 30-second per-command hard timeout
+- Session containers reaped after idle timeout; output captured before manual removal
 - Workspace mount is the only host filesystem exposure
 
 ### API Key Protection
