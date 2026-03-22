@@ -1,0 +1,134 @@
+/* ========== FocalPoint Theme Overrides ========== */
+
+/* Hero purple gradient */
+#fp-hero {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1028 40%, #2d1b4e 100%);
+}
+
+/* Purple-tinted geometric decorations */
+.fp-ring {
+  border-color: rgba(167, 139, 250, 0.08) !important;
+}
+
+.fp-line {
+  background: linear-gradient(to bottom, transparent, rgba(167, 139, 250, 0.1), transparent) !important;
+}
+
+/* Section backgrounds with purple undertones */
+#fp-features {
+  background: #0d0d18;
+}
+
+#fp-how {
+  background: #0a0a14;
+}
+
+#fp-cta {
+  background: #080812;
+}
+
+/* ========== Feature Cards ========== */
+.fp-features-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 640px;
+  margin-top: 16px;
+}
+
+.fp-feature-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--accent-purple);
+  border-radius: 8px;
+  padding: 24px 28px;
+  transition: all 0.3s ease;
+}
+
+.fp-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-left-color: var(--accent-purple);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fp-feature-card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--accent-purple);
+  margin-bottom: 8px;
+}
+
+.fp-feature-card p {
+  font-size: 0.875rem;
+  color: var(--text-body);
+  line-height: 1.8;
+}
+
+/* ========== How It Works Steps ========== */
+.fp-steps {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  max-width: 800px;
+  margin-top: 16px;
+}
+
+.fp-step {
+  flex: 1;
+  text-align: center;
+}
+
+.fp-step-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: rgba(167, 139, 250, 0.15);
+  display: block;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.fp-step h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.fp-step p {
+  font-size: 0.875rem;
+  color: var(--text-body);
+  line-height: 1.8;
+}
+
+/* ========== CTA Section ========== */
+.fp-cta-content {
+  text-align: center;
+}
+
+.fp-cta-content h2 {
+  font-size: var(--font-heading);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* ========== FocalPoint Responsive ========== */
+@media (max-width: 768px) {
+  .fp-steps {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .fp-step {
+    text-align: left;
+  }
+
+  .fp-step-number {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  .fp-features-grid {
+    max-width: 100%;
+  }
+}
