@@ -297,3 +297,35 @@ nav .nav-links a:hover {
   color: var(--text-primary);
   border-color: rgba(255, 255, 255, 0.3);
 }
+
+/* ========== Fade-in Animation ========== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in:nth-child(2) { transition-delay: 0.1s; }
+.fade-in:nth-child(3) { transition-delay: 0.2s; }
+.fade-in:nth-child(4) { transition-delay: 0.3s; }
+
+/* ========== Responsive: Tablet ========== */
+@media (max-width: 1024px) {
+  .section { padding: 60px 20px; }
+  nav { padding: 12px 20px; }
+}
+
+/* ========== Responsive: Mobile ========== */
+@media (max-width: 768px) {
+  nav .nav-links { display: none; }
+  .section { padding: 48px 16px; }
+  .section-number { left: 16px; top: 16px; }
+  .about-content { max-width: 100%; }
+  .projects-grid { max-width: 100%; }
+  .contact-links { flex-direction: column; align-items: center; }
+}
