@@ -21,13 +21,16 @@
 
 - 全屏深蓝黑渐变背景 (`#0a0a0a` → `#1a1a2e` → `#16213e`)
 - 居中大字标题 "JEFF"，副标题 "FOUNDER · BUILDER · CREATOR"
-- 几何装饰：半透明圆环、细线，缓慢漂移动画
-- 底部 scroll indicator
+- 几何装饰：2-3 个半透明圆环（`border: 1px solid rgba(255,255,255,0.04)`，直径 200-400px），1-2 条垂直细线，CSS 动画缓慢上下漂移（周期 15-20s）
+- 底部 scroll indicator：向下箭头 "↓"，带上下弹跳动画（周期 2s），文字 "SCROLL TO EXPLORE"
+- 板块编号模式：Hero 无编号，About "01 / ABOUT"，Projects "02 / PROJECTS"，Contact "03 / CONTACT"
 
 ### 2. About
 
 - 深色背景 (`#0d0d15`)
-- 居中排版，一句话定位 + 简短介绍
+- 居中排版
+- 定位语："Building the operating system for one-person companies"
+- 简介："人类提供 Vision + Judgment，AI 提供 Execution。我正在构建让一个人运营一家公司成为可能的工具和系统。"
 - 板块编号 "01 / ABOUT"
 - 元素滚动渐入
 
@@ -37,12 +40,16 @@
 - 项目卡片列表，每个卡片包含：项目名（品牌色）、简介、箭头链接
 - 品牌色方案：FounderOS `#e2b340`（金）、Onta Network `#4ecdc4`（青）、FocalPoint `#a78bfa`（紫）
 - 卡片 hover 时微微抬起 + 边框高亮
+- 项目内容（v1 占位，后续替换真实链接）：
+  - FounderOS — "AI 认知操作系统 — 记忆引擎 + 注意力管理 + 工作流编排"
+  - Onta Network — "支付基础设施 — 连接全球支付网络"
+  - FocalPoint — "AI 认知引擎 — 让 AI agent 像有经验的团队一样工作"
 
 ### 4. Contact
 
 - 最深色背景 (`#080810`)
 - "Let's Connect" 标题
-- 社交链接胶囊按钮（GitHub、Twitter、Email）
+- 社交链接胶囊按钮：GitHub (`github.com/jeff0052`)、Twitter (TBD)、Email (TBD)
 - 按钮 hover 时边框亮度变化
 
 ### Navigation
@@ -61,9 +68,11 @@
 
 ### Typography
 
-- 标题：无衬线体，800 weight，负 letter-spacing
-- 正文：400 weight，高行距 (1.6-1.8)
-- 板块编号/标签：小字，大 letter-spacing，低透明度
+- **字体栈：** `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`
+- **Hero 标题：** `clamp(3rem, 8vw, 6rem)`，800 weight，`letter-spacing: -0.02em`
+- **板块标题：** `clamp(1.5rem, 3vw, 2.5rem)`，700 weight
+- **正文：** `1rem`，400 weight，行距 1.6-1.8
+- **板块编号/标签：** `0.75rem`，`letter-spacing: 0.25em`，低透明度
 
 ### Animation
 
@@ -90,7 +99,7 @@ landing-page/
 ### Key Technical Points
 
 - **零依赖：** 不使用任何框架或库
-- **Scroll Snap：** `scroll-snap-type: y mandatory` 实现全屏翻页
+- **Scroll Snap：** `scroll-snap-type: y mandatory` 实现全屏翻页。Projects 板块如果内容超出一屏（尤其移动端），改为 `min-height: 100vh` 而非固定 `height: 100vh`，允许自然溢出
 - **Intersection Observer：** 检测元素进入视口，触发渐入动画
 - **CSS Custom Properties：** 统一管理颜色、间距等设计 token
 - **响应式：** Desktop 优先，media query 适配 tablet/mobile
@@ -100,7 +109,7 @@ landing-page/
 
 - Desktop: > 1024px（默认）
 - Tablet: 768px - 1024px（缩小间距，调整字号）
-- Mobile: < 768px（单列，导航改为汉堡菜单或隐藏）
+- Mobile: < 768px（单列，导航隐藏 — 移动端靠滚动浏览，不需要汉堡菜单）
 
 ## Non-Goals (v1)
 
