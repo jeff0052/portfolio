@@ -12,6 +12,8 @@
   --accent-gold: #e2b340;
   --accent-cyan: #4ecdc4;
   --accent-purple: #a78bfa;
+  --accent-blue: #60a5fa;
+  --accent-green: #34d399;
   --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-hero: clamp(3rem, 8vw, 6rem);
   --font-heading: clamp(1.5rem, 3vw, 2.5rem);
@@ -265,6 +267,8 @@ nav .nav-links a:hover {
 .project-card.gold h3 { color: var(--accent-gold); }
 .project-card.cyan h3 { color: var(--accent-cyan); }
 .project-card.purple h3 { color: var(--accent-purple); }
+.project-card.blue h3 { color: var(--accent-blue); }
+.project-card.green h3 { color: var(--accent-green); }
 
 /* ========== Contact Section ========== */
 .contact-content {
