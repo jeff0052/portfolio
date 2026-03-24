@@ -53,6 +53,7 @@ body {
 #empire { background: var(--bg-section-1); }
 #system { background: var(--bg-section-2); }
 #thesis { background: var(--bg-section-3); }
+#value { background: var(--bg-section-2); }
 #contact { background: var(--bg-contact); }
 
 /* ========== Navigation ========== */
@@ -481,6 +482,72 @@ a.system-block:hover {
   padding-top: 24px;
 }
 
+/* ========== Value Section ========== */
+.value-content {
+  width: 100%;
+  max-width: 900px;
+  text-align: center;
+}
+
+.value-content h2 {
+  font-size: var(--font-heading);
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+.value-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.value-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-4px);
+}
+
+.value-icon {
+  font-size: 1.5rem;
+}
+
+.value-card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.value-card p {
+  font-size: 0.875rem;
+  color: var(--text-body);
+  line-height: 1.7;
+  flex: 1;
+}
+
+.value-cta {
+  font-size: 0.875rem;
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  margin-top: 8px;
+}
+
+.value-cta:hover {
+  color: var(--text-primary);
+}
+
 /* ========== Contact Section ========== */
 .contact-content {
   text-align: center;
@@ -489,7 +556,13 @@ a.system-block:hover {
 .contact-content h2 {
   font-size: var(--font-heading);
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+.contact-tagline {
+  font-size: 1rem;
+  color: var(--text-body);
+  margin-bottom: 24px;
 }
 
 .contact-links {
@@ -534,6 +607,7 @@ a.system-block:hover {
   .section { padding: 60px 20px; }
   nav { padding: 12px 20px; }
   .system-blocks { grid-template-columns: repeat(2, 1fr); }
+  .value-cards { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
 }
 
 /* ========== Responsive: Mobile ========== */
