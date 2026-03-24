@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocalPoint — AI Cognitive Engine</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* FocalPoint Purple Theme Override */
+        #hero {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1028 40%, #2d1b4e 100%);
+        }
+
+        .fp-accent { color: var(--accent-purple); }
+
+        .fp-features {
+            width: 100%;
+            max-width: 720px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .fp-feature {
+            background: rgba(167, 139, 250, 0.04);
+            border: 1px solid rgba(167, 139, 250, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .fp-feature:hover {
+            border-color: rgba(167, 139, 250, 0.25);
+            background: rgba(167, 139, 250, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .fp-feature h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent-purple);
+        }
+
+        .fp-feature p {
+            font-size: 0.875rem;
+            color: var(--text-body);
+            line-height: 1.6;
+        }
+
+        .fp-status {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            margin-top: 16px;
+        }
+
+        .fp-back {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+        }
+
+        .fp-back:hover { color: var(--text-primary); }
+
+        .fp-description {
+            max-width: 560px;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .fp-description p {
+            font-size: 1rem;
+            color: var(--text-body);
+            line-height: 1.8;
+        }
+
+        .fp-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 24px;
+        }
+
+        .fp-stat {
+            text-align: center;
+        }
+
+        .fp-stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-purple);
+        }
+
+        .fp-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .fp-features { grid-template-columns: 1fr; }
+            .fp-stats { flex-direction: column; gap: 16px; }
+            .fp-back { left: 16px; top: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="../" class="logo" style="text-decoration:none;">JEFF</a>
+        <ul class="nav-links">
+            <li><a href="../#empire">PORTFOLIO</a></li>
+            <li><a href="../#system">FOUNDEROS</a></li>
+            <li><a href="../#contact">CONTACT</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section id="hero" class="section">
+        <div class="geo-ring"></div>
+        <div class="geo-ring"></div>
+        <div class="geo-ring"></div>
+        <div class="geo-line"></div>
+        <div class="geo-line"></div>
+        <a href="../" class="fp-back">← BACK TO JEFF</a>
+        <div class="hero-content">
+            <span class="hero-label">FOUNDEROS · COGNITIVE ENGINE</span>
+            <h1 class="hero-title fp-accent">FocalPoint</h1>
+            <span class="hero-subtitle">MAKE AI AGENTS WORK LIKE AN EXPERIENCED TEAM</span>
+            <div class="hero-divider"></div>
+            <span class="fp-status">✅ V1 Complete — 494 Tests Passing</span>
+        </div>
+        <div class="scroll-indicator">
+            <span class="arrow">↓</span>
+            <span class="scroll-text">LEARN MORE</span>
+        </div>
+    </section>
+
+    <!-- What is FocalPoint -->
+    <section id="about" class="section" style="background: var(--bg-section-1);">
+        <span class="section-number">01 / WHAT IS FOCALPOINT</span>
+        <div class="fp-description fade-in">
+            <h2>The Brain Behind FounderOS</h2>
+            <p>FocalPoint is an AI cognitive engine that gives AI agents memory, attention, and structured decision-making. Without it, agents forget context, lose focus, and make inconsistent decisions.</p>
+            <div class="fp-stats">
+                <div class="fp-stat">
+                    <div class="fp-stat-value">6</div>
+                    <div class="fp-stat-label">MEMORY LAYERS</div>
+                </div>
+                <div class="fp-stat">
+                    <div class="fp-stat-value">494</div>
+                    <div class="fp-stat-label">TESTS PASSING</div>
+                </div>
+                <div class="fp-stat">
+                    <div class="fp-stat-value">V4</div>
+                    <div class="fp-stat-label">ARCHITECTURE</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Capabilities -->
+    <section id="features" class="section" style="background: var(--bg-section-2);">
+        <span class="section-number">02 / CORE CAPABILITIES</span>
+        <div class="fade-in" style="text-align:center; margin-bottom: 24px;">
+            <h2>What FocalPoint Does</h2>
+        </div>
+        <div class="fp-features fade-in">
+            <div class="fp-feature">
+                <h3>Persistent Memory</h3>
+                <p>6-layer memory architecture — from company constitution to temporary context. Agents never forget critical decisions.</p>
+            </div>
+            <div class="fp-feature">
+                <h3>Attention Management</h3>
+                <p>Heartbeat system detects stale tasks, blocked items, and at-risk deadlines. Surfaces what matters now.</p>
+            </div>
+            <div class="fp-feature">
+                <h3>Context Assembly</h3>
+                <p>4-layer context bundling — dashboard, alerts, neighborhood, and deep detail. Right context, right time.</p>
+            </div>
+            <div class="fp-feature">
+                <h3>Task Orchestration</h3>
+                <p>Hierarchical work items with dependencies, risk detection, and automatic escalation. Work flows, not stalls.</p>
+            </div>
+            <div class="fp-feature">
+                <h3>Knowledge System</h3>
+                <p>Structured knowledge docs with inheritance. Parent context flows down to child tasks automatically.</p>
+            </div>
+            <div class="fp-feature">
+                <h3>Review Protocol</h3>
+                <p>Built-in review gates with parallel approval. Quality checks before execution, not after.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Built With -->
+    <section id="built" class="section" style="background: var(--bg-section-3);">
+        <span class="section-number">03 / BUILT BY ONE PERSON</span>
+        <div class="fade-in" style="text-align:center; max-width: 560px;">
+            <h2>Vibcoded from Scratch</h2>
+            <p style="color: var(--text-body); line-height: 1.8; margin-top: 16px;">FocalPoint was built entirely by Jeff using AI-assisted development. No team, no funding — just one founder and AI tools working together. This is the proof that FounderOS works.</p>
+            <div style="margin-top: 32px;">
+                <a href="../#system" style="font-size: 0.875rem; color: var(--accent-purple); text-decoration: none; border: 1px solid rgba(167, 139, 250, 0.3); padding: 10px 24px; border-radius: 24px; transition: all 0.3s ease;">See FounderOS →</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="../js/main.js" defer></script>
+</body>
+</html>
