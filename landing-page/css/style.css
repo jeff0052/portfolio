@@ -428,6 +428,62 @@ a.system-block:hover {
   opacity: 0.6;
 }
 
+/* ========== System — Vertical Apps ========== */
+.system-apps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.system-apps-label {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  font-weight: 600;
+}
+
+.system-app {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(226, 179, 64, 0.15);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.system-app:hover {
+  border-color: rgba(226, 179, 64, 0.3);
+  background: rgba(226, 179, 64, 0.03);
+  transform: translateY(-2px);
+}
+
+.app-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.app-info {
+  flex: 1;
+}
+
+.app-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  margin-bottom: 4px;
+}
+
+.app-info p {
+  font-size: 0.8125rem;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
 /* ========== Thesis Section ========== */
 .thesis-content {
   text-align: center;
