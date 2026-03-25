@@ -404,6 +404,69 @@ git add -A && git commit -m "feat(mcp): add JPA audit infrastructure — BaseAud
 
 ---
 
+## Task 2.5: Wire Existing Entities to Audit Infrastructure
+
+**Files (all MODIFY — check exact class names against current codebase):**
+- Modify: `v2/catalog/infrastructure/persistence/entity/SkuEntity.java`
+- Modify: `v2/catalog/infrastructure/persistence/entity/StoreSkuAvailabilityEntity.java`
+- Modify: `v2/order/infrastructure/persistence/entity/ActiveTableOrderEntity.java`
+- Modify: `v2/order/infrastructure/persistence/entity/SubmittedOrderEntity.java`
+- Modify: `v2/promotion/infrastructure/persistence/entity/PromotionRuleEntity.java`
+- Modify: `v2/member/infrastructure/persistence/entity/MemberEntity.java`
+- Modify: `v2/settlement/infrastructure/persistence/entity/SettlementRecordEntity.java`
+
+**Risk: HIGH — this modifies existing JPA entities. Test thoroughly.**
+
+- [ ] **Step 1: Check if any entity already extends another class**
+
+Run: `grep -r "extends " pos-backend/src/main/java/com/developer/pos/v2/*/infrastructure/persistence/entity/*.java`
+
+If any entity extends something other than `Object`, you CANNOT use `extends BaseAuditableEntity`. Instead, copy the 4 audit fields directly into that entity.
+
+- [ ] **Step 2: Add `extends BaseAuditableEntity` and `@EntityListeners` to each entity**
+
+For each entity listed above, make two changes:
+
+```java
+// BEFORE:
+@Entity
+@Table(name = "v2_skus")
+public class SkuEntity {
+
+// AFTER:
+@Entity
+@Table(name = "v2_skus")
+@EntityListeners(ActionContextAuditListener.class)
+public class SkuEntity extends BaseAuditableEntity {
+```
+
+Add these imports to each file:
+```java
+import com.developer.pos.v2.common.entity.BaseAuditableEntity;
+import com.developer.pos.v2.mcp.ActionContextAuditListener;
+import jakarta.persistence.EntityListeners;
+```
+
+Repeat for all 7 entities.
+
+- [ ] **Step 3: Verify compilation**
+
+Run: `cd pos-backend && mvn compile -Dspring.profiles.active=mock`
+Expected: BUILD SUCCESS
+
+- [ ] **Step 4: Verify JPA mapping with existing tests (if any)**
+
+Run: `cd pos-backend && mvn test -Dspring.profiles.active=mock`
+Expected: All existing tests still pass
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A && git commit -m "feat(mcp): wire existing entities to BaseAuditableEntity with audit listener"
+```
+
+---
+
 ## Task 3: Action Log Repository
 
 **Files:**
@@ -418,7 +481,7 @@ git add -A && git commit -m "feat(mcp): add JPA audit infrastructure — BaseAud
 package com.developer.pos.v2.mcp.infrastructure;
 
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "action_log")
@@ -458,7 +521,7 @@ public class ActionLogEntity {
     private String changeReason;
 
     @Column(name = "created_at", insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     // Getters, setters, no-arg constructor
     public ActionLogEntity() {}
@@ -484,7 +547,7 @@ public class ActionLogEntity {
     public void setResultJson(String resultJson) { this.resultJson = resultJson; }
     public String getChangeReason() { return changeReason; }
     public void setChangeReason(String changeReason) { this.changeReason = changeReason; }
-    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }
 ```
 
@@ -1162,18 +1225,211 @@ public class OrderTools {
 
 **Note:** `MerchantOrderReadService` may not have `getActiveOrders`, `getOrderHistory`, `getTableStatus` methods. The implementer should check and add as needed — these are read-only queries that wrap existing JPA repositories.
 
-- [ ] **Step 2: Write SettlementTools, ReportTools, StoreTools**
+- [ ] **Step 2: Write SettlementTools**
 
-Follow the same pattern as above. Each file:
-- Injects the corresponding application service
-- Registers Query/Analyze tools in `@PostConstruct`
-- No Action tools (settlement and orders are POS-driven, not AI-driven)
+```java
+// v2/mcp/tools/SettlementTools.java
+package com.developer.pos.v2.mcp.tools;
 
-Settlement tools: `get_daily_revenue`, `get_payment_breakdown`, `get_refund_history`
-Report tools: `get_daily_summary`, `get_product_ranking`, `compare_periods`
-Store tools: `get_store_config`, `get_table_layout`, `get_store_list`
+import com.developer.pos.v2.mcp.ActionLogService;
+import com.developer.pos.v2.mcp.McpToolRegistry;
+import com.developer.pos.v2.mcp.McpToolRegistry.ToolDefinition;
+import com.developer.pos.v2.settlement.application.service.CashierSettlementApplicationService;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
+import java.util.Map;
 
-The implementer follows the exact same pattern as OrderTools — constructor injection, registry.register in @PostConstruct, delegate to existing service methods.
+@Component
+public class SettlementTools {
+    private final McpToolRegistry registry;
+    private final CashierSettlementApplicationService settlementService;
+    private final ActionLogService actionLog;
+
+    public SettlementTools(McpToolRegistry registry,
+                           CashierSettlementApplicationService settlementService,
+                           ActionLogService actionLog) {
+        this.registry = registry;
+        this.settlementService = settlementService;
+        this.actionLog = actionLog;
+    }
+
+    @PostConstruct
+    public void registerTools() {
+        registry.register(new ToolDefinition(
+            "get_daily_revenue",
+            "Get total revenue for a store on a given date, broken down by payment method",
+            "settlement", "QUERY", null,
+            params -> settlementService.getDailyRevenue(
+                toLong(params.get("store_id")), (String) params.get("date"))
+        ));
+
+        registry.register(new ToolDefinition(
+            "get_payment_breakdown",
+            "Get payment method distribution (card/QR/cash) for a store in a date range",
+            "settlement", "ANALYZE", null,
+            params -> settlementService.getPaymentBreakdown(
+                toLong(params.get("store_id")),
+                (String) params.get("date_from"),
+                (String) params.get("date_to"))
+        ));
+
+        registry.register(new ToolDefinition(
+            "get_refund_history",
+            "List refund records for a store in a date range",
+            "settlement", "QUERY", null,
+            params -> settlementService.getRefundHistory(
+                toLong(params.get("store_id")),
+                (String) params.get("date_from"),
+                (String) params.get("date_to"))
+        ));
+    }
+
+    private Long toLong(Object value) {
+        if (value instanceof Number n) return n.longValue();
+        if (value instanceof String s) return Long.parseLong(s);
+        throw new IllegalArgumentException("Cannot convert to Long: " + value);
+    }
+}
+```
+
+**Note:** `getDailyRevenue`, `getPaymentBreakdown`, `getRefundHistory` may not exist on `CashierSettlementApplicationService`. The implementer should add these read-only query methods wrapping `JpaSettlementRecordRepository` and `JpaPaymentAttemptRepository`.
+
+- [ ] **Step 3: Write ReportTools**
+
+```java
+// v2/mcp/tools/ReportTools.java
+package com.developer.pos.v2.mcp.tools;
+
+import com.developer.pos.v2.mcp.ActionLogService;
+import com.developer.pos.v2.mcp.McpToolRegistry;
+import com.developer.pos.v2.mcp.McpToolRegistry.ToolDefinition;
+import com.developer.pos.v2.report.application.service.ReportReadService;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
+import java.util.Map;
+
+@Component
+public class ReportTools {
+    private final McpToolRegistry registry;
+    private final ReportReadService reportService;
+    private final ActionLogService actionLog;
+
+    public ReportTools(McpToolRegistry registry,
+                       ReportReadService reportService,
+                       ActionLogService actionLog) {
+        this.registry = registry;
+        this.reportService = reportService;
+        this.actionLog = actionLog;
+    }
+
+    @PostConstruct
+    public void registerTools() {
+        registry.register(new ToolDefinition(
+            "get_daily_summary",
+            "Get daily business summary: revenue, order count, avg ticket size, table turnover",
+            "report", "QUERY", null,
+            params -> reportService.getDailySummary(
+                toLong(params.get("store_id")), (String) params.get("date"))
+        ));
+
+        registry.register(new ToolDefinition(
+            "get_product_ranking",
+            "Rank products by sales volume or revenue for a store in a date range",
+            "report", "ANALYZE", null,
+            params -> reportService.getProductRanking(
+                toLong(params.get("store_id")),
+                (String) params.get("date_from"),
+                (String) params.get("date_to"),
+                (String) params.getOrDefault("sort_by", "revenue"))
+        ));
+
+        registry.register(new ToolDefinition(
+            "compare_periods",
+            "Compare two date ranges for a store: revenue, orders, avg ticket, growth rate",
+            "report", "ANALYZE", null,
+            params -> reportService.comparePeriods(
+                toLong(params.get("store_id")),
+                (String) params.get("period1_from"), (String) params.get("period1_to"),
+                (String) params.get("period2_from"), (String) params.get("period2_to"))
+        ));
+    }
+
+    private Long toLong(Object value) {
+        if (value instanceof Number n) return n.longValue();
+        if (value instanceof String s) return Long.parseLong(s);
+        throw new IllegalArgumentException("Cannot convert to Long: " + value);
+    }
+}
+```
+
+**Note:** `getDailySummary`, `getProductRanking`, `comparePeriods` may need to be added to `ReportReadService`.
+
+- [ ] **Step 4: Write StoreTools**
+
+```java
+// v2/mcp/tools/StoreTools.java
+package com.developer.pos.v2.mcp.tools;
+
+import com.developer.pos.v2.mcp.ActionLogService;
+import com.developer.pos.v2.mcp.McpToolRegistry;
+import com.developer.pos.v2.mcp.McpToolRegistry.ToolDefinition;
+import com.developer.pos.v2.store.infrastructure.persistence.repository.JpaStoreRepository;
+import com.developer.pos.v2.store.infrastructure.persistence.repository.JpaStoreTableRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
+import java.util.Map;
+
+@Component
+public class StoreTools {
+    private final McpToolRegistry registry;
+    private final JpaStoreRepository storeRepository;
+    private final JpaStoreTableRepository tableRepository;
+    private final ActionLogService actionLog;
+
+    public StoreTools(McpToolRegistry registry,
+                      JpaStoreRepository storeRepository,
+                      JpaStoreTableRepository tableRepository,
+                      ActionLogService actionLog) {
+        this.registry = registry;
+        this.storeRepository = storeRepository;
+        this.tableRepository = tableRepository;
+        this.actionLog = actionLog;
+    }
+
+    @PostConstruct
+    public void registerTools() {
+        registry.register(new ToolDefinition(
+            "get_store_list",
+            "List all stores for a merchant",
+            "store", "QUERY", null,
+            params -> storeRepository.findByMerchantId(toLong(params.get("merchant_id")))
+        ));
+
+        registry.register(new ToolDefinition(
+            "get_table_layout",
+            "Get all tables for a store with current status",
+            "store", "QUERY", null,
+            params -> tableRepository.findByStoreId(toLong(params.get("store_id")))
+        ));
+
+        registry.register(new ToolDefinition(
+            "get_store_config",
+            "Get store configuration and settings",
+            "store", "QUERY", null,
+            params -> storeRepository.findById(toLong(params.get("store_id")))
+                .orElse(null)
+        ));
+    }
+
+    private Long toLong(Object value) {
+        if (value instanceof Number n) return n.longValue();
+        if (value instanceof String s) return Long.parseLong(s);
+        throw new IllegalArgumentException("Cannot convert to Long: " + value);
+    }
+}
+```
+
+**Note:** Store domain has no application service layer — it only has entities and repositories. StoreTools injects repositories directly, consistent with the current codebase where the store module is minimal.
 
 - [ ] **Step 3: Commit**
 
@@ -1412,19 +1668,22 @@ git add -A && git commit -m "feat(mcp): add ai_proposal table schema for P1 appr
 
 ## Summary
 
-| Task | What | New Files | Estimated Time |
-|------|------|-----------|---------------|
-| 1 | ActionContext model + holder | 3 | 10 min |
-| 2 | JPA audit infrastructure | 5 | 20 min |
-| 3 | Action log repository | 3 | 10 min |
-| 4 | MCP server config + registry | 4 | 15 min |
-| 5 | Catalog tools | 2 | 15 min |
-| 6 | Promotion tools | 2 | 15 min |
-| 7 | Member/CRM tools | 1 | 10 min |
-| 8 | Order/Settlement/Report/Store tools | 4 | 20 min |
-| 9 | MCP REST endpoint | 1 | 15 min |
-| 10 | Integration test | 1 | 10 min |
-| 11 | ai_proposal schema (P1 prep) | 1 | 5 min |
-| **Total** | | **~27 new files** | **~2.5 hours** |
+| Task | What | Files | Estimated Time |
+|------|------|-------|---------------|
+| 1 | ActionContext model + holder | 3 new | 10 min |
+| 2 | JPA audit infrastructure | 5 new | 20 min |
+| 2.5 | Wire existing entities to audit | 7 modify | 15 min |
+| 3 | Action log repository | 3 new | 10 min |
+| 4 | MCP server config + registry | 4 new | 15 min |
+| 5 | Catalog tools | 2 new | 15 min |
+| 6 | Promotion tools | 2 new | 15 min |
+| 7 | Member/CRM tools | 1 new | 10 min |
+| 8 | Order/Settlement/Report/Store tools | 4 new | 30 min |
+| 9 | MCP REST endpoint | 1 new | 15 min |
+| 10 | Integration test | 1 new | 10 min |
+| 11 | ai_proposal schema (P1 prep) | 1 new | 5 min |
+| **Total** | | **~27 new + 7 modify** | **~3 hours** |
 
-All changes are **new files** except `pom.xml` and `application.yml`. This minimizes merge conflicts with the actively-developed codebase.
+**Design decision on audit columns:** Core entity tables get 4 minimal columns (`actor_type`, `actor_id`, `decision_source`, `change_reason`) — enough to know who did what and why. The full context (`recommendation_id`, `approval_status`, `risk_level`, `params_json`, `result_json`) lives in the `action_log` table. This keeps entity schema simple while preserving complete audit history.
+
+All new files minimize merge conflicts with the actively-developed codebase. Task 2.5 (entity modifications) is the only high-risk change — verify compilation and existing tests carefully.
