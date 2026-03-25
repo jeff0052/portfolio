@@ -634,7 +634,7 @@ Each store runs its own AI Operator independently. The owner sees a consolidated
 
 ### 9.1 P0 Deliverables
 
-- MCP Tool Server (TypeScript/Bun or Spring Boot wrapper)
+- MCP Tool Server (Spring Boot embedded module, SSE transport for remote)
 - ActionContext added to all V2 service methods
 - Risk classification config for all write operations
 - Audit trail (action_log table) for all Tool calls
