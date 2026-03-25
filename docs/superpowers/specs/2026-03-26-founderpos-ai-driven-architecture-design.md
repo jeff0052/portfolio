@@ -100,6 +100,43 @@ enum ApprovalStatus { APPROVED, PENDING, REJECTED, NOT_REQUIRED }
 - AI low-risk auto-execution → `actorType=AI, source=AI_AUTO, approval=NOT_REQUIRED`
 - External agent request → `actorType=EXTERNAL_AGENT, source=MANUAL, approval=PENDING`
 
+**Propagation Pattern:**
+
+ActionContext flows as a `@RequestScope` Spring bean, populated at the entry point (MCP Tool handler or REST controller) and available to all services via injection:
+
+```java
+// Entry point: MCP Tool handler or REST controller populates ActionContext
+@RequestScope
+@Component
+public class ActionContextHolder {
+    private ActionContext context;
+    // getters/setters
+}
+
+// Services inject it — no method signature changes needed
+@Service
+public class PromotionService {
+    @Autowired private ActionContextHolder contextHolder;
+
+    public PromotionRule createPromotion(CreatePromotionCommand cmd) {
+        ActionContext ctx = contextHolder.getContext();
+        // ... business logic ...
+        // ctx is automatically written to audit columns via JPA @PrePersist listener
+    }
+}
+
+// JPA entity listener writes audit columns automatically
+@EntityListeners(ActionContextAuditListener.class)
+public abstract class BaseAuditableEntity {
+    private String actorType;
+    private String actorId;
+    private String decisionSource;
+    private String changeReason;
+}
+```
+
+For existing Android POS and QR web clients: the REST controllers default to `actorType=HUMAN, source=MANUAL` when no ActionContext header is provided. MCP Tool calls always include explicit context.
+
 ### 3.3 Required Changes: Risk Classification
 
 Every write operation has a predefined risk level:
@@ -183,6 +220,13 @@ Each domain exposes Tools in three categories:
 - Analyze: `get_store_comparison` (multi-store)
 - Action: `update_store_settings`, `update_table_config`
 
+**Kitchen Domain (extends Order):**
+- Query: `get_kitchen_queue`, `get_prep_time_by_sku`
+- Analyze: `get_avg_prep_time_trend`, `get_return_reasons`, `get_bottleneck_skus`, `get_peak_load_analysis`
+- Action: (kitchen operations are POS-driven, AI only observes and advises)
+
+**GTO Domain:** Scoped out of P0-P2. Will be added as tools when the GTO backend module is implemented (currently placeholder). GTO is compliance-critical (HIGH risk) — AI will only generate reports, never auto-execute.
+
 ### 4.3 Unified Tool Call Contract
 
 Every MCP Tool call follows this structure:
@@ -228,7 +272,11 @@ The MCP Tool Server is a standalone process that:
 - Can be called by FounderOS Office Agent, Restaurant AI Operator, or any MCP-compatible client
 - Handles authentication and authorization per-tool
 
-Technology: TypeScript + Bun (consistent with FounderOS FPMS stack) or a thin wrapper around the existing Spring Boot endpoints.
+**Technology Decision: Spring Boot Embedded MCP Server.**
+
+Rationale: The POS backend is Java/Spring Boot. Adding a separate TypeScript MCP server introduces a network hop, serialization overhead, and a second deployment unit. Instead, the MCP Tool Server runs as a module inside the existing Spring Boot application, exposing tools via MCP protocol (stdio for local, SSE for remote). This keeps ActionContext propagation in-process and avoids the complexity of a separate service.
+
+If FounderOS needs to call remotely, the SSE transport endpoint (`/mcp/sse`) is exposed through the existing Nginx reverse proxy.
 
 ---
 
@@ -261,7 +309,7 @@ One AI Operator, five role contexts (not five separate agents):
 | Trigger | Example | Frequency |
 |---------|---------|-----------|
 | **Scheduled** | Daily morning briefing, weekly report | Cron-based |
-| **Event-driven** | Prep time > threshold, member churn detected, promotion expires | Real-time via order_events |
+| **Event-driven** | Prep time > threshold, member churn detected, promotion expires | Spring ApplicationEvent (see 5.3.1) |
 | **Owner-initiated** | "最近生意怎么样" "帮我想个促销方案" | On-demand via chat |
 
 ### 5.4 Approval Flow
@@ -281,6 +329,80 @@ AI Operator generates proposal
    └→ Auto-execute → Log + notify owner after the fact
 ```
 
+### 5.3.1 Event Mechanism
+
+In-process Spring ApplicationEvent bus (no external message broker needed at this scale):
+
+```java
+// Domain services publish events
+public class OrderService {
+    @Autowired private ApplicationEventPublisher publisher;
+
+    public void submitOrder(SubmitOrderCommand cmd) {
+        // ... business logic ...
+        publisher.publishEvent(new OrderSubmittedEvent(order));
+    }
+}
+
+// AI Operator listens
+@Component
+public class KitchenAdvisorListener {
+    @Async
+    @EventListener
+    public void onOrderSubmitted(OrderSubmittedEvent event) {
+        // Check prep time, update running averages
+        // If threshold exceeded → create AI proposal
+    }
+}
+```
+
+Events are also persisted to `order_events` table (wire JPA entity in P1) for audit and replay. If scale demands it later, extract to Redis Streams or Kafka — the ApplicationEvent interface remains the same.
+
+### 5.4 Approval Flow
+
+#### 5.4.1 Proposal State Machine
+
+```
+DRAFT → PENDING_APPROVAL → APPROVED → EXECUTED
+                         → REJECTED → ARCHIVED
+                         → EXPIRED (auto after 48h)
+```
+
+#### 5.4.2 Proposal Storage
+
+New `ai_proposal` table:
+
+```sql
+CREATE TABLE ai_proposal (
+    id VARCHAR(64) PRIMARY KEY,
+    advisor_role VARCHAR(32),        -- MENU / PROMO / CRM / OPS / KITCHEN
+    proposal_type VARCHAR(64),       -- CREATE_PROMOTION / ADJUST_PRICE / RECALL_MEMBERS
+    target_domain VARCHAR(32),       -- promotion / catalog / member
+    target_tool VARCHAR(64),         -- create_promotion_draft
+    params_json JSON,                -- tool call parameters
+    reason TEXT,                      -- AI explanation
+    risk_level VARCHAR(16),          -- LOW / MEDIUM / HIGH
+    status VARCHAR(32),              -- DRAFT / PENDING / APPROVED / REJECTED / EXPIRED / EXECUTED
+    created_at TIMESTAMP,
+    expires_at TIMESTAMP,            -- default: created_at + 48h
+    reviewed_by VARCHAR(64),
+    reviewed_at TIMESTAMP,
+    executed_at TIMESTAMP
+);
+```
+
+#### 5.4.3 Approval API
+
+```
+GET  /api/v2/proposals                    -- list pending proposals
+GET  /api/v2/proposals/{id}               -- proposal detail with AI reasoning
+POST /api/v2/proposals/{id}/approve       -- approve and execute
+POST /api/v2/proposals/{id}/reject        -- reject with reason
+POST /api/v2/proposals/{id}/modify        -- modify params then approve
+```
+
+Expired proposals (48h timeout) are auto-archived. The AI Operator can re-propose with updated reasoning if conditions still warrant action.
+
 Owner receives approvals via:
 - FounderOS dashboard (if connected)
 - WeChat/Telegram notification (lightweight)
@@ -297,11 +419,23 @@ The AI Operator is orchestrated by FounderOS Office Agent:
 
 ```
 With FounderOS:
-  FounderOS Office Agent → MCP → POS Tool Server → POS Backend
+  FounderOS Office Agent → MCP (SSE) → POS MCP Module → POS Backend Services
 
 Standalone:
-  Local Orchestrator (cron + simple LLM calls) → MCP → POS Tool Server → POS Backend
+  POS AI Scheduler (Spring @Scheduled) → POS MCP Module → POS Backend Services
+  Owner chat → POS AI Chat endpoint → Claude API → POS MCP Module → POS Backend Services
 ```
+
+**Standalone Mode Design:**
+
+Standalone mode runs entirely within the Spring Boot process:
+
+1. **Scheduled analysis** — `@Scheduled` Spring jobs run daily/weekly, call Claude API with advisor role prompts + data from Query tools, store proposals in `ai_proposal` table.
+2. **Owner chat** — A REST endpoint (`/api/v2/ai/chat`) accepts owner questions, calls Claude API with restaurant context, returns answers or creates proposals.
+3. **Event-driven** — Same `@EventListener` pattern described in 5.3.1, triggers Claude API calls when thresholds are breached.
+4. **Memory** — Advisor conversation history stored in `ai_advisor_context` table (advisor_role, context_json, updated_at). Refreshed daily with latest operational data.
+
+This is a P1 deliverable. The standalone orchestrator is lightweight (no separate process, no message broker) and uses the same MCP Tool interface that FounderOS would call externally.
 
 ---
 
@@ -551,9 +685,9 @@ Each store runs its own AI Operator independently. The owner sees a consolidated
 | Layer 1 (Backend) | Java 17 / Spring Boot 3 / JPA / Flyway / MySQL | Existing, stable, proven |
 | Layer 1 (Android) | Kotlin / Jetpack Compose / Hilt / Retrofit | Existing POS terminal app |
 | Layer 1 (Web) | TypeScript / React / Vite | Existing admin panels |
-| Layer 2 (MCP Server) | TypeScript / Bun | Consistent with FounderOS FPMS |
-| Layer 3 (AI Operator) | FounderOS Office Agent + FPMS | Reuse existing orchestration |
-| Layer 3 (Standalone) | Lightweight cron + Claude API | For non-FounderOS deployment |
+| Layer 2 (MCP Server) | Spring Boot embedded module (MCP4J or custom) | In-process, no extra deployment unit |
+| Layer 3 (with FounderOS) | FounderOS Office Agent + FPMS via MCP SSE | Reuse existing orchestration |
+| Layer 3 (Standalone) | Spring @Scheduled + Claude API | In-process, no separate service |
 | Layer 4 (Agent) | Agent protocol (TBD: A2A / custom) | Standard interoperability |
 | Layer 4 (Wallet) | Unified Payment Domain (existing architecture) | Extend, don't rebuild |
 | Layer 5 (Credit) | RWS Platform (Python / FastAPI) | Existing RWS design |
@@ -600,7 +734,36 @@ Each store runs its own AI Operator independently. The owner sees a consolidated
 
 ---
 
-## 13. Risks and Mitigations
+## 13. Error Handling and Degradation
+
+### 13.1 Graceful Degradation
+
+| Failure | Behavior |
+|---------|----------|
+| MCP module error | POS continues as Layer 1 (traditional mode). REST endpoints still work. AI features unavailable. |
+| Claude API down | Scheduled analysis skipped. Owner chat returns "AI temporarily unavailable." Proposals queue for next cycle. |
+| AI returns hallucinated parameters | Action tools validate all inputs before execution. Invalid tool calls are rejected with error logged to `ai_proposal` table. |
+| Proposal notification fails | Proposal stays in `PENDING_APPROVAL` status. Owner can see it in admin panel. Retry notification on next cycle. |
+
+### 13.2 Idempotency
+
+All Action tools must be idempotent. Pattern: check current state before mutating. If the target state already matches the requested change, return success without re-executing.
+
+### 13.3 Security Model
+
+| Caller | Auth Mechanism | Tool Access |
+|--------|---------------|-------------|
+| POS Android app | JWT (existing auth) | Layer 1 REST only |
+| Merchant Admin | JWT (existing auth) | Layer 1 REST only |
+| FounderOS Agent | MCP + API key (per-restaurant) | Layer 2 all tools |
+| Standalone Orchestrator | In-process (no auth needed) | Layer 2 all tools |
+| External Agent (P3) | Agent-to-Agent token + rate limit | Layer 2 subset (query + limited action) |
+
+MCP API keys are managed per-restaurant in `mcp_api_key` table. Each key has a scope (read-only, read-write, admin) and rate limits.
+
+---
+
+## 14. Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|-----------|
