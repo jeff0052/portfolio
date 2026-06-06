@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a1a">
+<title>AI 时代，审美才是最高级的生产力</title>
+<meta name="description" content="AI 时代，技能会通胀，审美会升值。真正稀缺的，不是比 AI 更会做事的人，而是能判断 AI 做出来的东西是否高级、是否真实、是否有未来的人。">
+<meta property="og:title" content="AI 时代，审美才是最高级的生产力">
+<meta property="og:description" content="技能是工具，审美是方向。AI 可以替代人的手，却很难替代人的眼睛。">
+<meta property="og:type" content="article">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --body: #333333;
+    --paper: #fafaf7;
+    --accent: #c1272d;
+    --accent2: #1d3557;
+    --dim: #666666;
+    --code-bg: #1a1a2e;
+    --code-green: #00ff88;
+    --card-bg: #f0ede6;
+    --border: #d8d4cc;
+    --gold: #b8860b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--paper);
+    color: var(--body);
+    overflow-x: hidden;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+    background: var(--ink);
+    color: #ffffff;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridShift 20s linear infinite;
+  }
+
+  .hero-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .particle:nth-child(1) { left: 15%; top: 30%; animation-delay: 0s; }
+  .particle:nth-child(2) { left: 75%; top: 20%; animation-delay: 1s; }
+  .particle:nth-child(3) { left: 45%; top: 70%; animation-delay: 2s; }
+  .particle:nth-child(4) { left: 85%; top: 55%; animation-delay: 3s; }
+  .particle:nth-child(5) { left: 25%; top: 80%; animation-delay: 4s; }
+  .particle:nth-child(6) { left: 60%; top: 40%; animation-delay: 0.5s; }
+  .particle:nth-child(7) { left: 35%; top: 15%; animation-delay: 2.5s; }
+  .particle:nth-child(8) { left: 90%; top: 75%; animation-delay: 1.5s; }
+
+  @keyframes float {
+    0%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+    20% { opacity: 0.8; }
+    50% { opacity: 0.4; transform: translateY(-40px) scale(1.5); }
+    80% { opacity: 0.6; }
+  }
+
+  @keyframes gridShift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(60px, 60px); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 900px;
+  }
+
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #e8a838;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 6vw, 4.2rem);
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .hero-title .highlight {
+    background: linear-gradient(135deg, #e8a838, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.8;
+    max-width: 650px;
+    margin: 0 auto 3rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  .hero-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.9s forwards;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.2em;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+    margin: 0.5rem auto 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ===== MAIN ===== */
+  .article {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  .section {
+    margin-bottom: 5rem;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 900;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.4;
+    margin-bottom: 2rem;
+    color: var(--ink);
+  }
+
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: var(--accent);
+    margin-top: 1rem;
+  }
+
+  p {
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--body);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+  }
+
+  strong, b {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  em {
+    font-style: normal;
+    background: linear-gradient(transparent 60%, rgba(184,134,11,0.25) 60%);
+    padding: 0 2px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ===== QUOTE ===== */
+  .quote-block {
+    position: relative;
+    margin: 3rem 0;
+    padding: 2.5rem 2rem 2.5rem 3rem;
+    background: var(--card-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+  }
+
+  .quote-block p {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.9;
+  }
+
+  .quote-block .quote-mark {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.8rem;
+    font-size: 3rem;
+    color: var(--accent);
+    opacity: 0.3;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+
+  /* ===== TERMINAL ===== */
+  .terminal {
+    background: var(--code-bg);
+    border-radius: 12px;
+    margin: 2.5rem 0;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .terminal-dot.r { background: #ff5f56; }
+  .terminal-dot.y { background: #ffbd2e; }
+  .terminal-dot.g { background: #27c93f; }
+
+  .terminal-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.4);
+    margin-left: auto;
+  }
+
+  .terminal-body {
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: #ffffff;
+  }
+
+  .terminal-body .prompt-symbol { color: var(--code-green); }
+  .terminal-body .prompt-text { color: rgba(255,255,255,0.9); }
+
+  .terminal-body .output {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .terminal-body .pick {
+    color: #e8a838;
+    font-size: 0.78rem;
+    margin-top: 0.5rem;
+  }
+
+  .typing-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: var(--code-green);
+    margin-left: 4px;
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ===== BIG STATEMENT ===== */
+  .big-statement {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    margin: 3rem 0;
+    background: var(--ink);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .big-statement::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(232,168,56,0.08), transparent 70%);
+  }
+
+  .big-statement .mono {
+    position: relative;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.1rem, 3vw, 1.8rem);
+    color: var(--code-green);
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 30px rgba(0,255,136,0.3);
+  }
+
+  .big-statement .serif {
+    position: relative;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 3.5vw, 2rem);
+    line-height: 1.6;
+    color: #ffffff;
+  }
+
+  .big-statement .serif .gold { color: #e8a838; }
+
+  /* ===== INFO CARD ===== */
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: 2.5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold), var(--accent2));
+  }
+
+  .info-card-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+
+  .info-card p { color: var(--body); }
+
+  /* ===== TRIAD (3 capability cards) ===== */
+  .triad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2.5rem 0;
+  }
+
+  .triad-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.8rem 1.4rem;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .triad-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  }
+
+  .triad-card .ic {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(193,39,45,0.12), rgba(184,134,11,0.18));
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .triad-card .h {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+
+  .triad-card .d {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--dim);
+  }
+
+  /* ===== DYAD (AI vs 人 split) ===== */
+  .dyad {
+    margin: 3rem 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .dyad-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dyad-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+
+  .dyad-cell {
+    padding: 1.1rem 1.4rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .dyad-cell.ai {
+    color: var(--dim);
+    background: rgba(0,0,0,0.02);
+  }
+
+  .dyad-cell.human {
+    color: var(--ink);
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(193,39,45,0.06), rgba(184,134,11,0.08));
+    border-left: 2px solid var(--accent);
+  }
+
+  .dyad-cell .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .dyad-cell.ai .k { background: rgba(0,0,0,0.06); color: var(--dim); }
+  .dyad-cell.human .k { background: var(--accent); color: #fff; }
+
+  /* ===== PYRAMID ===== */
+  .pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 2.5rem 0;
+  }
+
+  .pyramid-level {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    transition: transform 0.3s;
+    color: var(--ink);
+  }
+
+  .pyramid-level:hover { transform: scale(1.03); }
+
+  .pyramid-level.l1 {
+    width: 40%;
+    background: linear-gradient(135deg, var(--accent), #a01f24);
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .pyramid-level.l2 {
+    width: 55%;
+    background: rgba(193,39,45,0.12);
+    border: 1px solid rgba(193,39,45,0.25);
+  }
+
+  .pyramid-level.l3 {
+    width: 70%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+  }
+
+  .pyramid-level.l4 {
+    width: 85%;
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    color: var(--dim);
+  }
+
+  /* ===== ENDING ===== */
+  .ending {
+    text-align: center;
+    padding: 6rem 2rem;
+    background: var(--ink);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ending::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(232,168,56,0.06), transparent);
+    pointer-events: none;
+  }
+
+  .ending-text {
+    position: relative;
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    line-height: 2.2;
+    color: rgba(255,255,255,0.85);
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .ending-text .em {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .ending-text .gold {
+    color: #e8a838;
+    font-weight: 700;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    background: var(--paper);
+  }
+
+  .footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* ===== SPELL / ACCENT ===== */
+  .spell {
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    .triad { grid-template-columns: 1fr; }
+    .dyad-row { grid-template-columns: 1fr; }
+    .dyad-cell.human { border-left: none; border-top: 2px solid var(--accent); }
+    .pyramid-level.l1 { width: 60%; }
+    .pyramid-level.l2 { width: 72%; }
+    .pyramid-level.l3 { width: 84%; }
+    .pyramid-level.l4 { width: 96%; }
+    .article { padding: 3rem 1.2rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-particles">
+    <div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-tag">观点 · AI 与人</p>
+    <h1 class="hero-title">AI 时代，<span class="highlight">审美</span><br>才是最高级的生产力</h1>
+    <p class="hero-subtitle">机器越强，人就越要往上走一层——从"会做"走向"会判断"。手的时代正在落幕，眼睛的时代刚刚开始。</p>
+    <div class="hero-divider"></div>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</section>
+
+<!-- ARTICLE -->
+<main class="article">
+
+  <!-- 01 -->
+  <div class="section">
+    <div class="section-number">01</div>
+    <div class="section-title">技能正在贬值</div>
+
+    <p>过去几百年，教育的核心是教人"做出来"。会写字、会算账、会画画、会编程、会做一份漂亮的 PPT——这些被称为"技能"，是一个人安身立命的资本。家长让孩子学钢琴、学奥数、学英语，逻辑都是一样的：掌握一门别人不会的手艺，就能在分工里占住一个位置。</p>
+
+    <p>这套逻辑维持了很久，因为做事本身是稀缺的。一份能落地的方案、一段能跑通的代码、一张能用的设计稿，都需要时间、训练和反复练习。谁能更快更好地"做出来"，谁就更值钱。</p>
+
+    <p>但这个前提正在崩塌。</p>
+
+    <p>人工智能在"做出来"这件事上的能力，正以肉眼可见的速度超过普通人。它的输入更大、记忆更全、检索更快、组合更多、运算更强。一个刚入行的人需要三年练到的手感，AI 用一次调用就能逼近。技能不是被某个具体产品替代，而是被整个硅基智能的底层能力稀释——它像货币超发一样，<strong>正在通货膨胀</strong>。</p>
+
+    <div class="big-statement">
+      <p class="serif">当"做出来"变得廉价，<br>真正的问题浮出水面：<br><span class="gold">到底什么值得做？</span></p>
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="section">
+    <div class="section-number">02</div>
+    <div class="section-title">稀缺的不是手，是眼睛</div>
+
+    <p>AI 能生成一千个答案，但它不知道哪一个真正高级；它能模仿一千种风格，却不知道哪一种在这个时代真正成立；它能给出一千套方案，可它判断不了哪一个能穿透人心。</p>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot r"></div>
+        <div class="terminal-dot y"></div>
+        <div class="terminal-dot g"></div>
+        <span class="terminal-label">judgment — selecting</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt-symbol">❯ </span><span class="prompt-text">给我 1000 个方案。</span></div>
+        <div class="output">⣿ Generated 1000 options · all technically valid · ranking unknown</div>
+        <div class="pick">↳ 人：「就是这一个。」<span class="typing-cursor"></span></div>
+      </div>
+    </div>
+
+    <p>这正是人类的位置。</p>
+
+    <p>人类真正稀缺的能力，不是"做出来"，而是判断：什么是高级的，什么是庸俗的；什么有生命力，什么是空壳；什么在当下成立，什么注定过时。这种能力，我愿意把它叫做<strong>审美判断</strong>。</p>
+
+    <p>需要澄清的是，这里说的"审美"，不是狭义的好看不好看。它是一种高级的判断力，至少包含几层：</p>
+
+    <div class="triad">
+      <div class="triad-card">
+        <div class="ic">Φ</div>
+        <div class="h">哲学判断</div>
+        <div class="d">分得清什么重要、什么不重要，什么是终极问题、什么是噪音。</div>
+      </div>
+      <div class="triad-card">
+        <div class="ic">∑</div>
+        <div class="h">数学结构感</div>
+        <div class="d">感受得到什么是简洁的、优雅的、可被证明的，什么是底层规律、什么是临时拼凑。</div>
+      </div>
+      <div class="triad-card">
+        <div class="ic">✦</div>
+        <div class="h">艺术感受力</div>
+        <div class="d">知道什么打动人、什么有生命力，什么高级、什么媚俗。</div>
+      </div>
+    </div>
+
+    <p>再加上商业直觉、时代感，以及人对人的那种微妙感受力。一个只会执行的人，会被 AI 替代。但一个能判断好坏对错、能看出一样东西有没有未来的人，<strong class="spell">会变成 AI 的导演</strong>。</p>
+  </div>
+
+  <!-- 03 -->
+  <div class="section">
+    <div class="section-number">03</div>
+    <div class="section-title">碳基与硅基</div>
+
+    <p>人和机器的差别，不是谁更聪明，而是两种智能的形态根本不同。</p>
+
+    <p>硅基智能擅长的是<strong>规模</strong>：大规模输入、大规模记忆、大规模计算、大规模生成。它靠海量数据和算力取胜，吞吐越大越强。碳基智能擅长的是另一套东西：<strong>极高的能效、自适应、情境判断、小样本学习、价值判断，以及身体经验带来的直觉。</strong></p>
+
+    <p>举个最朴素的例子。人类不需要看几万张照片，才能感觉出一个人有没有气质；也不需要研究几百万个商业案例，才能闻出一个项目有没有"味道"。人可以在极少的信息里，迅速形成一个粗糙但高效的"小模型"。这个小模型未必精确，却极其省力，尤其适合那些复杂、模糊、带着价值判断的场景——而这恰恰是世界上最重要的那一类决策。</p>
+
+    <p>所以未来人和 AI 的关系，不是比谁更会做事，而是一种分工：</p>
+
+    <div class="dyad">
+      <div class="dyad-row">
+        <div class="dyad-cell ai"><span class="k">AI</span>负责放大</div>
+        <div class="dyad-cell human"><span class="k">人</span>负责判断</div>
+      </div>
+      <div class="dyad-row">
+        <div class="dyad-cell ai"><span class="k">AI</span>负责生成</div>
+        <div class="dyad-cell human"><span class="k">人</span>负责定调</div>
+      </div>
+      <div class="dyad-row">
+        <div class="dyad-cell ai"><span class="k">AI</span>负责计算</div>
+        <div class="dyad-cell human"><span class="k">人</span>负责选择</div>
+      </div>
+      <div class="dyad-row">
+        <div class="dyad-cell ai"><span class="k">AI</span>负责执行</div>
+        <div class="dyad-cell human"><span class="k">人</span>负责审美</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 -->
+  <div class="section">
+    <div class="section-number">04</div>
+    <div class="section-title">教育的标准会被重写</div>
+
+    <p>如果上面成立，那么第一个直接的推论是：<strong>教育的标准会变。</strong></p>
+
+    <p>过去的教育以技能为终点：你会不会一门技术，会不会一个工具，掌握没掌握一种专业能力。考核的是"你能做什么"。未来的教育会越来越以审美判断为核心：你有没有一套高级的判断系统，能不能分辨好坏、看见方向。</p>
+
+    <p>这也意味着三门"看起来没用"的学科会重新变得重要——<strong>哲学、数学、艺术</strong>。哲学训练的是对终极问题的判断：什么值得追求，什么是幻觉。数学训练的是结构感：什么是简洁与优雅，什么是可证明的真，什么是底层秩序。艺术训练的是感受力：什么有生命，什么动人，什么高级，什么廉价。</p>
+
+    <p>这三类能力之所以重要，是因为它们恰好是 AI 最难独立闭环的部分。AI 可以在这三个方向上无限生成素材，却无法替你完成最后那一步——<em>判断</em>。它给得出一千个选项，却给不出"就是这一个"的笃定。那个笃定，来自人。</p>
+
+    <div class="quote-block">
+      <span class="quote-mark">"</span>
+      <p>技能是工具，审美是方向。AI 可以替代人的手，却很难替代人的眼睛。</p>
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div class="section">
+    <div class="section-number">05</div>
+    <div class="section-title">有判断力的人，要学会快速输出</div>
+
+    <p>第二个推论，对今天就已经具备判断力的人尤其关键：<strong>你必须学会把判断快速输出。</strong></p>
+
+    <p>有判断力的人往往有个习惯——喜欢慢慢想、慢慢写、慢慢打磨，追求一击即中。在过去，这是美德，因为做事很贵，慢工出细活是值得的。但在 AI 时代，逻辑反过来了。<strong>判断力如果不输出，就无法被放大。</strong></p>
+
+    <p>你脑子里的那个"小模型"很值钱，可它一旦留在脑子里，就只能影响你一个人的决策。它必须被外化——变成文章、框架、标准、案例、视频、产品、投资判断、商业决策。只有当它被表达出来，别人才能借用你的模型，用你的眼睛看世界，用你的尺子量东西。</p>
+
+    <p>这就是 AI 时代真正高价值的人的样子：他提供的不再是知识本身（知识 AI 有的是），而是一套<strong>判断系统</strong>。</p>
+
+    <div class="info-card">
+      <div class="info-card-title">模型导演</div>
+      <p style="margin:0; font-size:0.95rem;">他像一个高级导演。导演不亲自搬灯、剪片、写每一句台词——那些 AI 和团队都能做。导演做的是定义：什么是好的，什么不对，哪里要重来，什么可以成立。他用自己的审美调度整个生产，把一群人和一堆工具的产出，收束成一个有方向的作品。他的内在判断越清晰、输出越快，被 AI 放大的倍数就越大。</p>
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div class="section">
+    <div class="section-number">06</div>
+    <div class="section-title">技能通胀，审美升值</div>
+
+    <p>价值的重心，正在从"会做"向上迁移：</p>
+
+    <div class="pyramid">
+      <div class="pyramid-level l1">审美判断：什么值得做、什么是高级的</div>
+      <div class="pyramid-level l2">哲学 · 数学结构感 · 艺术感受力</div>
+      <div class="pyramid-level l3">定调 · 选择 · 快速输出判断系统</div>
+      <div class="pyramid-level l4">生成 · 计算 · 执行（AI 负责放大）</div>
+    </div>
+
+    <p>可以把这一切压成一句话——</p>
+
+    <div class="big-statement">
+      <p class="serif">技能会<span class="gold">通胀</span>，审美会<span class="gold">升值</span>。<br>真正稀缺的，是能判断 AI 做出来的东西<br>是否高级、是否真实、是否有未来的人。</p>
+    </div>
+
+    <p>再说得完整一点：未来的教育，不应再以掌握技能为终点，而应以形成高级审美为核心。技能是工具，审美是方向。AI 可以替代人的手，却很难替代人的眼睛。真正高级的人，是那些能用自己的审美去训练 AI、调度 AI、放大 AI，并且能把内在判断快速输出给世界的人。</p>
+  </div>
+
+</main>
+
+<!-- ENDING -->
+<section class="ending section">
+  <div class="ending-text">
+    机器越强，人就越要往上走一层——<br>
+    从<span class="em">"会做"</span>走向<span class="em">"会判断"</span>，<br>
+    从执行者走向定调者。<br><br>
+    手的时代正在落幕，<br>
+    眼睛的时代，<br>
+    <span class="gold">刚刚开始</span>。
+  </div>
+</section>
+
+<footer class="footer">
+  <p>AI 时代，审美才是最高级的生产力 · 2026 · <a href="index.html">返回索引</a></p>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  window.addEventListener('scroll', () => {
+    const hero = document.querySelector('.hero-content');
+    const scroll = window.scrollY;
+    if (scroll < window.innerHeight) {
+      hero.style.transform = `translateY(${scroll * 0.3}px)`;
+      hero.style.opacity = 1 - (scroll / window.innerHeight) * 0.8;
+    }
+  });
+</script>
+
+</body>
+</html>
